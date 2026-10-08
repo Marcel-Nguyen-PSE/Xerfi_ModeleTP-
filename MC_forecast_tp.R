@@ -1,5 +1,70 @@
 library(dplyr)
 
+d <- d |>
+  arrange(annee, trimestre) |>
+  mutate(
+    tp_lag1 = lag(tp_volume_trimestriel, 1),
+    tp_lag2 = lag(tp_volume_trimestriel, 2),
+
+    routes_lag1 = lag(ica_routes, 1),
+    routes_lag4 = lag(ica_routes, 4),
+
+    tunnels_lag1 = lag(ica_tunnels, 1),
+    tunnels_lag2 = lag(ica_tunnels, 2),
+
+    swi_lag1 = lag(swi_trimestriel, 1),
+    swi_lag4 = lag(swi_trimestriel, 4)
+  )
+
+hist <- d |>
+  filter(
+    annee < 2026 |
+    (annee == 2026 & trimestre <= 2)
+  )
+
+# Scenario A: previous-quarter TP available
+m_A <- lm(
+  tp_volume_trimestriel ~
+    tp_lag1 +
+    regime_fntp_2016 +
+    covid_2020_t2,
+  data = hist
+)
+
+# Scenario B: previous-quarter TP unavailable
+m_B <- lm(
+  tp_volume_trimestriel ~
+    tp_lag2 +
+    routes_lag4 +
+    tunnels_lag2 +
+    swi_lag1 +
+    regime_fntp_2016 +
+    covid_2020_t2,
+  data = hist
+)
+
+m_routes <- lm(
+  ica_routes ~ routes_lag1,
+  data = hist
+)
+
+m_tunnels <- lm(
+  ica_tunnels ~ tunnels_lag1,
+  data = hist
+)
+
+m_swi <- lm(
+  swi_trimestriel ~
+    swi_lag1 +
+    swi_lag4,
+  data = hist
+)
+
+m_swi_ar1 <- lm(
+  swi_trimestriel ~ swi_lag1,
+  data = hist
+)
+
 set.seed(123)
 
 hist <- d |>
@@ -498,3 +563,4 @@ legend(
 
   bty = "n"
 )
+
