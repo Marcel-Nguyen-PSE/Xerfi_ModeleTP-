@@ -1,3 +1,6 @@
+library(dplyr)
+library(readxl)
+
 d <- as.data.frame(read_excel(
   "base_tp_regressions_trimestrielle.xlsx",
   sheet = "Donnees_regression"
